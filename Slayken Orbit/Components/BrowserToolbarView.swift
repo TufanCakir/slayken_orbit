@@ -24,6 +24,7 @@ struct BrowserToolbarView: View {
     let onShowTabsOverview: () -> Void
     let onShowHistory: () -> Void
     let onShowAddPage: () -> Void
+    let onShowSavedPages: () -> Void
     let onTogglePrivateMode: () -> Void
     let onSelectTab: (BrowserTab.ID) -> Void
     let onCloseTab: (BrowserTab.ID) -> Void
@@ -125,6 +126,10 @@ struct BrowserToolbarView: View {
             }
 
             if !isPrivateMode {
+                Button(action: onShowSavedPages) {
+                    Label("Gespeicherte Seiten", systemImage: "bookmark")
+                }
+
                 Button(action: onShowAddPage) {
                     Label("Seite hinzufuegen", systemImage: "doc.badge.plus")
                 }
@@ -195,6 +200,7 @@ private struct PreviewContainer: View {
             onShowTabsOverview: {},
             onShowHistory: {},
             onShowAddPage: {},
+            onShowSavedPages: {},
             onTogglePrivateMode: {},
             onSelectTab: { _ in },
             onCloseTab: { _ in },

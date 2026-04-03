@@ -9,8 +9,8 @@ import SwiftUI
 
 struct AddPageView: View {
     let isPrivateMode: Bool
-    let onAddLink: (String, Bool) -> Void
-    let onAddHTML: (String, String, Bool) -> Void
+    let onAddLink: (String, Bool, Bool) -> Void
+    let onAddHTML: (String, String, Bool, Bool) -> Void
 
     @Environment(\.dismiss) private var dismiss
     @State private var inputMode: AddPageInputMode = .link
@@ -18,6 +18,7 @@ struct AddPageView: View {
     @State private var pageTitle = ""
     @State private var htmlText = ""
     @State private var opensInNewTab = true
+    @State private var shouldSavePage = true
 
     var body: some View {
         NavigationStack {
@@ -43,6 +44,15 @@ struct AddPageView: View {
 
                 Section("Ziel") {
                     Toggle("In neuem Tab oeffnen", isOn: $opensInNewTab)
+                }
+
+                if !isPrivateMode {
+                    Section("Speichern") {
+                        Toggle(
+                            "Seite dauerhaft speichern",
+                            isOn: $shouldSavePage
+                        )
+                    }
                 }
 
                 switch inputMode {
@@ -102,9 +112,9 @@ struct AddPageView: View {
     private func submit() {
         switch inputMode {
         case .link:
-            onAddLink(linkText, opensInNewTab)
+            onAddLink(linkText, opensInNewTab, shouldSavePage)
         case .html:
-            onAddHTML(pageTitle, htmlText, opensInNewTab)
+            onAddHTML(pageTitle, htmlText, opensInNewTab, shouldSavePage)
         }
     }
 }
@@ -128,7 +138,7 @@ private enum AddPageInputMode: String, CaseIterable, Identifiable {
 #Preview {
     AddPageView(
         isPrivateMode: false,
-        onAddLink: { _, _ in },
-        onAddHTML: { _, _, _ in }
+        onAddLink: { _, _, _ in },
+        onAddHTML: { _, _, _, _ in }
     )
 }

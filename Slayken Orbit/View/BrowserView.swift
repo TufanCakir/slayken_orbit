@@ -69,6 +69,13 @@ struct BrowserView: View {
                 onAddHTML: viewModel.addPageFromHTML
             )
         }
+        .sheet(isPresented: $viewModel.isSavedPagesPresented) {
+            SavedPagesView(
+                pages: viewModel.savedPages,
+                onOpen: viewModel.openSavedPage,
+                onDelete: viewModel.deleteSavedPage
+            )
+        }
     }
 
     @ViewBuilder
@@ -114,6 +121,7 @@ struct BrowserView: View {
             onShowTabsOverview: viewModel.showTabsOverview,
             onShowHistory: viewModel.showHistory,
             onShowAddPage: viewModel.showAddPage,
+            onShowSavedPages: viewModel.showSavedPages,
             onTogglePrivateMode: viewModel.togglePrivateModeForSelectedTab,
             onSelectTab: viewModel.selectTab,
             onCloseTab: viewModel.closeTab,
@@ -141,6 +149,7 @@ struct BrowserView: View {
             onShowTabsOverview: viewModel.showTabsOverview,
             onShowHistory: viewModel.showHistory,
             onShowAddPage: viewModel.showAddPage,
+            onShowSavedPages: viewModel.showSavedPages,
             onTogglePrivateMode: viewModel.togglePrivateModeForSelectedTab,
             onSelectTab: viewModel.selectTab,
             onCloseTab: viewModel.closeTab,
