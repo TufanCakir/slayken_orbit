@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		2B162C7F2F7F2B1200D0EA4F /* Slayken Orbit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = "Slayken Orbit.app"; path = "/Users/tufancakir/Desktop/Swift Projekte/Slayken Orbit/build/Debug-iphoneos/Slayken Orbit.app"; sourceTree = "<absolute>"; };
+		2B5E127E2F7FB0BF00F1C795 /* Slayken Orbit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = "Slayken Orbit.app"; path = "/Users/tufancakir/Desktop/Swift Projekte/Slayken Orbit/build/Debug-iphoneos/Slayken Orbit.app"; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -58,7 +58,7 @@
 			packageProductDependencies = (
 			);
 			productName = "Slayken Orbit";
-			productReference = 2B162C7F2F7F2B1200D0EA4F /* Slayken Orbit.app */;
+			productReference = 2B5E127E2F7FB0BF00F1C795 /* Slayken Orbit.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */

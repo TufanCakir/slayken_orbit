@@ -20,6 +20,7 @@ final class BrowserTab: ObservableObject, Identifiable {
     @Published var addressText: String
     @Published var previewImage: UIImage?
     @Published var currentURL: URL?
+    @Published private(set) var lastContentURL: URL?
     @Published var isLoading = false
     @Published var canGoBack = false
     @Published var canGoForward = false
@@ -53,11 +54,30 @@ final class BrowserTab: ObservableObject, Identifiable {
         isShowingStartPage = false
         addressText = url.absoluteString
         currentURL = url
+        lastContentURL = url
         previewImage = BrowserPreviewStore.shared.loadPreview(
             for: url,
             isPrivate: isPrivateMode
         )
         webView.load(URLRequest(url: url))
+        stateDidChange?(self)
+    }
+
+    func loadHTML(_ html: String, title: String = "HTML-Seite") {
+        let trimmedHTML = html.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedHTML.isEmpty else {
+            return
+        }
+
+        isShowingStartPage = false
+        self.title = title
+        addressText = "Lokale HTML-Seite"
+        currentURL = nil
+        previewImage = nil
+        isLoading = true
+        canGoBack = false
+        canGoForward = false
+        webView.loadHTMLString(trimmedHTML, baseURL: nil)
         stateDidChange?(self)
     }
 
@@ -106,6 +126,7 @@ final class BrowserTab: ObservableObject, Identifiable {
                 )
             }
             addressText = url.absoluteString
+            lastContentURL = url
         }
 
         currentURL = url

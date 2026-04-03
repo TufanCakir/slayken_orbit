@@ -9,6 +9,7 @@ import SwiftUI
 
 struct HistoryView: View {
     let entries: [BrowserHistoryEntry]
+    let isPrivateMode: Bool
     let onSelect: (BrowserHistoryEntry) -> Void
     let onClear: () -> Void
 
@@ -26,39 +27,50 @@ struct HistoryView: View {
                             "Keine History",
                             systemImage: "clock.arrow.circlepath",
                             description: Text(
-                                "Besuchte Seiten werden hier angezeigt."
+                                isPrivateMode
+                                    ? "Incognito ist aktiv. In diesem Modus wird kein neuer Verlauf gespeichert."
+                                    : "Besuchte Seiten werden hier angezeigt."
                             )
                         )
                     } else {
-                        List(entries) { entry in
-                            Button {
-                                onSelect(entry)
-                                dismiss()
-                            } label: {
-                                VStack(alignment: .leading, spacing: 6) {
-                                    Text(entry.title)
-                                        .font(.headline)
-                                        .foregroundStyle(.primary)
-                                        .lineLimit(1)
-
-                                    Text(entry.url.absoluteString)
-                                        .font(.subheadline)
-                                        .foregroundStyle(.primary)
-                                        .lineLimit(1)
-
-                                    Text(
-                                        entry.visitedAt.formatted(
-                                            date: .abbreviated,
-                                            time: .shortened
-                                        )
-                                    )
-                                    .font(.caption)
-                                    .foregroundStyle(.primary)
+                        List {
+                            if isPrivateMode {
+                                Section {
+                                    incognitoBanner
+                                        .listRowBackground(Color.clear)
                                 }
-
-                                .padding()
                             }
-                            .buttonStyle(.plain)
+
+                            ForEach(entries) { entry in
+                                Button {
+                                    onSelect(entry)
+                                    dismiss()
+                                } label: {
+                                    VStack(alignment: .leading, spacing: 6) {
+                                        Text(entry.title)
+                                            .font(.headline)
+                                            .foregroundStyle(.primary)
+                                            .lineLimit(1)
+
+                                        Text(entry.url.absoluteString)
+                                            .font(.subheadline)
+                                            .foregroundStyle(.primary)
+                                            .lineLimit(1)
+
+                                        Text(
+                                            entry.visitedAt.formatted(
+                                                date: .abbreviated,
+                                                time: .shortened
+                                            )
+                                        )
+                                        .font(.caption)
+                                        .foregroundStyle(.primary)
+                                    }
+
+                                    .padding()
+                                }
+                                .buttonStyle(.plain)
+                            }
                         }
                         .listStyle(.plain)
                     }
@@ -79,5 +91,27 @@ struct HistoryView: View {
                 }
             }
         }
+    }
+
+    private var incognitoBanner: some View {
+        Label(
+            "INCOGNITO aktiv. Neue Seiten aus diesem Modus werden nicht im Verlauf gespeichert.",
+            systemImage: "hand.raised.fill"
+        )
+        .font(.headline.weight(.bold))
+        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            LinearGradient(
+                colors: [
+                    Color(red: 0.17, green: 0.12, blue: 0.24),
+                    Color(red: 0.07, green: 0.07, blue: 0.12),
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
+        .foregroundStyle(.white)
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
     }
 }

@@ -10,7 +10,9 @@ import SwiftUI
 struct BrowserStartView: View {
     @Binding var searchText: String
 
+    let isPrivateMode: Bool
     let onSubmit: () -> Void
+    let onShowAddPage: () -> Void
 
     var body: some View {
         ZStack {
@@ -103,6 +105,27 @@ struct BrowserStartView: View {
                             )
                         }
                     }
+
+                    if !isPrivateMode {
+                        Button(action: onShowAddPage) {
+                            Label(
+                                "Eigene Seite hinzufuegen",
+                                systemImage: "doc.badge.plus"
+                            )
+                            .font(.headline.weight(.bold))
+                            .foregroundStyle(.primary)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                            .background(.ultraThinMaterial)
+                            .clipShape(
+                                RoundedRectangle(
+                                    cornerRadius: 22,
+                                    style: .continuous
+                                )
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
             }
         }
@@ -132,6 +155,8 @@ private struct QuickSearchChip: View {
 #Preview {
     BrowserStartView(
         searchText: .constant(""),
-        onSubmit: {}
+        isPrivateMode: false,
+        onSubmit: {},
+        onShowAddPage: {}
     )
 }

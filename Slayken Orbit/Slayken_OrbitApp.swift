@@ -10,11 +10,19 @@ import SwiftUI
 @main
 struct Slayken_OrbitApp: App {
     @StateObject private var themeStore = ThemeStore()
+    @StateObject private var networkMonitor = NetworkMonitor()
 
     var body: some Scene {
         WindowGroup {
-            RootView()
-                .environmentObject(themeStore)
+            Group {
+                if networkMonitor.isConnected {
+                    RootView()
+                } else {
+                    OfflineView()
+                }
+            }
+            .environmentObject(themeStore)
+            .preferredColorScheme(themeStore.preferredColorScheme)
         }
     }
 }

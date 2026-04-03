@@ -10,6 +10,7 @@ import SwiftUI
 struct BrowserTabsOverviewView: View {
     let tabs: [BrowserTab]
     let selectedTabID: BrowserTab.ID?
+    let isPrivateMode: Bool
     let onSelectTab: (BrowserTab.ID) -> Void
     let onCloseTab: (BrowserTab.ID) -> Void
     let onAddTab: () -> Void
@@ -64,6 +65,30 @@ struct BrowserTabsOverviewView: View {
             Text("Deine Tabs")
                 .font(.system(size: 32, weight: .black, design: .rounded))
                 .foregroundStyle(.primary)
+
+            if isPrivateMode {
+                Label(
+                    "Incognito aktiv. Vorschauen und Verlauf bleiben privat.",
+                    systemImage: "hand.raised.fill"
+                )
+                .font(.headline.weight(.bold))
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+                .background(
+                    LinearGradient(
+                        colors: [
+                            Color(red: 0.17, green: 0.12, blue: 0.24),
+                            Color(red: 0.07, green: 0.07, blue: 0.12),
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .foregroundStyle(.white)
+                .clipShape(
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                )
+            }
 
             Text(
                 "Wechsle direkt zwischen deinen Tabs, schließe ungenutzte Seiten oder starte einen neuen Tab."
@@ -225,6 +250,7 @@ private struct BrowserTabOverviewCard: View {
             BrowserTab(isPrivateMode: true),
         ],
         selectedTabID: nil,
+        isPrivateMode: true,
         onSelectTab: { _ in },
         onCloseTab: { _ in },
         onAddTab: {},

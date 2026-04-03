@@ -17,10 +17,12 @@ struct BrowserView: View {
             VStack(spacing: 16) {
                 if let selectedTab = viewModel.selectedTab {
                     if selectedTab.isShowingStartPage {
-                        contentShell {
+                        contentShell(isPrivateMode: selectedTab.isPrivateMode) {
                             BrowserStartView(
                                 searchText: $viewModel.searchText,
-                                onSubmit: viewModel.submitSearch
+                                isPrivateMode: selectedTab.isPrivateMode,
+                                onSubmit: viewModel.submitSearch,
+                                onShowAddPage: viewModel.showAddPage
                             )
                         } toolbar: {
                             startToolbar(for: selectedTab)
@@ -43,6 +45,7 @@ struct BrowserView: View {
         .sheet(isPresented: $viewModel.isHistoryPresented) {
             HistoryView(
                 entries: viewModel.history,
+                isPrivateMode: viewModel.selectedTab?.isPrivateMode == true,
                 onSelect: viewModel.openHistoryEntry,
                 onClear: viewModel.clearHistory
             )
@@ -51,6 +54,7 @@ struct BrowserView: View {
             BrowserTabsOverviewView(
                 tabs: viewModel.tabs,
                 selectedTabID: viewModel.selectedTabID,
+                isPrivateMode: viewModel.selectedTab?.isPrivateMode == true,
                 onSelectTab: viewModel.selectTabFromOverview,
                 onCloseTab: viewModel.closeTab,
                 onAddTab: viewModel.addTabFromOverview,
@@ -58,11 +62,18 @@ struct BrowserView: View {
                 onDismiss: viewModel.hideTabsOverview
             )
         }
+        .sheet(isPresented: $viewModel.isAddPagePresented) {
+            AddPageView(
+                isPrivateMode: viewModel.selectedTab?.isPrivateMode == true,
+                onAddLink: viewModel.addPageFromLink,
+                onAddHTML: viewModel.addPageFromHTML
+            )
+        }
     }
 
     @ViewBuilder
     private func browserContent(for selectedTab: BrowserTab) -> some View {
-        contentShell {
+        contentShell(isPrivateMode: selectedTab.isPrivateMode) {
             BrowserWebView(
                 tab: selectedTab,
                 onVisitRecorded: viewModel.recordVisit
@@ -92,16 +103,17 @@ struct BrowserView: View {
             tabs: viewModel.tabs,
             selectedTabID: viewModel.selectedTabID,
             canGoBack: false,
-            canGoForward: false,
+            canGoForward: selectedTab.lastContentURL != nil,
             isLoading: false,
             isPrivateMode: selectedTab.isPrivateMode,
             onSubmit: viewModel.submitSearch,
-            onBack: {},
-            onForward: {},
+            onBack: viewModel.goBack,
+            onForward: viewModel.goForward,
             onReload: {},
             onHome: viewModel.openHomePage,
             onShowTabsOverview: viewModel.showTabsOverview,
             onShowHistory: viewModel.showHistory,
+            onShowAddPage: viewModel.showAddPage,
             onTogglePrivateMode: viewModel.togglePrivateModeForSelectedTab,
             onSelectTab: viewModel.selectTab,
             onCloseTab: viewModel.closeTab,
@@ -115,8 +127,10 @@ struct BrowserView: View {
             searchText: $viewModel.searchText,
             tabs: viewModel.tabs,
             selectedTabID: viewModel.selectedTabID,
-            canGoBack: selectedTab.canGoBack,
-            canGoForward: selectedTab.canGoForward,
+            canGoBack: selectedTab.canGoBack || !selectedTab.isShowingStartPage,
+            canGoForward: selectedTab.canGoForward
+                || selectedTab.isShowingStartPage
+                    && selectedTab.lastContentURL != nil,
             isLoading: selectedTab.isLoading,
             isPrivateMode: selectedTab.isPrivateMode,
             onSubmit: viewModel.submitSearch,
@@ -126,6 +140,7 @@ struct BrowserView: View {
             onHome: viewModel.openHomePage,
             onShowTabsOverview: viewModel.showTabsOverview,
             onShowHistory: viewModel.showHistory,
+            onShowAddPage: viewModel.showAddPage,
             onTogglePrivateMode: viewModel.togglePrivateModeForSelectedTab,
             onSelectTab: viewModel.selectTab,
             onCloseTab: viewModel.closeTab,
@@ -135,10 +150,15 @@ struct BrowserView: View {
     }
 
     private func contentShell<Content: View, Toolbar: View>(
+        isPrivateMode: Bool = false,
         @ViewBuilder content: () -> Content,
         @ViewBuilder toolbar: () -> Toolbar
     ) -> some View {
         VStack(spacing: 16) {
+            if isPrivateMode {
+                privateModeBanner
+            }
+
             content()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
 
@@ -149,6 +169,43 @@ struct BrowserView: View {
     private var backgroundView: some View {
         Color(.systemBackground)
             .ignoresSafeArea()
+    }
+
+    private var privateModeBanner: some View {
+        HStack(spacing: 14) {
+            Image(systemName: "eye.slash.fill")
+                .font(.system(size: 20, weight: .black))
+                .foregroundStyle(.white)
+                .frame(width: 48, height: 48)
+                .background(Color.black.opacity(0.18), in: Circle())
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text("INCOGNITO")
+                    .font(.system(size: 24, weight: .black, design: .rounded))
+                    .foregroundStyle(.white)
+
+                Text(
+                    "Privater Modus aktiv. Verlauf und Vorschauen werden nicht gespeichert."
+                )
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.white.opacity(0.82))
+            }
+
+            Spacer()
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 18)
+        .background(
+            LinearGradient(
+                colors: [
+                    Color(red: 0.17, green: 0.12, blue: 0.24),
+                    Color(red: 0.07, green: 0.07, blue: 0.12),
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
     }
 }
 

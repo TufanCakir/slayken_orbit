@@ -17,6 +17,7 @@ final class BrowserViewModel: ObservableObject {
     @Published private(set) var history: [BrowserHistoryEntry] = []
     @Published var isHistoryPresented = false
     @Published var isTabsOverviewPresented = false
+    @Published var isAddPagePresented = false
 
     private let homeURL = URL(string: "https://www.google.com")!
 
@@ -83,11 +84,29 @@ final class BrowserViewModel: ObservableObject {
     }
 
     func goBack() {
-        selectedTab?.webView.goBack()
+        guard let selectedTab else {
+            return
+        }
+
+        if selectedTab.canGoBack {
+            selectedTab.webView.goBack()
+        } else if !selectedTab.isShowingStartPage {
+            openHomePage()
+        }
     }
 
     func goForward() {
-        selectedTab?.webView.goForward()
+        guard let selectedTab else {
+            return
+        }
+
+        if selectedTab.canGoForward {
+            selectedTab.webView.goForward()
+        } else if selectedTab.isShowingStartPage,
+            let lastContentURL = selectedTab.lastContentURL
+        {
+            selectedTab.load(lastContentURL)
+        }
     }
 
     func reload() {
@@ -124,6 +143,14 @@ final class BrowserViewModel: ObservableObject {
         isHistoryPresented = true
     }
 
+    func showAddPage() {
+        isAddPagePresented = true
+    }
+
+    func hideAddPage() {
+        isAddPagePresented = false
+    }
+
     func showTabsOverview() {
         isTabsOverviewPresented = true
     }
@@ -156,6 +183,39 @@ final class BrowserViewModel: ObservableObject {
         history.removeAll()
     }
 
+    func addPageFromLink(_ input: String, opensInNewTab: Bool) {
+        let trimmedInput = input.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let destinationURL = resolvedURL(from: trimmedInput) else {
+            return
+        }
+
+        let tab = targetTab(opensInNewTab: opensInNewTab)
+        tab.load(destinationURL)
+        selectTab(tab.id)
+        hideAddPage()
+    }
+
+    func addPageFromHTML(
+        title: String,
+        html: String,
+        opensInNewTab: Bool
+    ) {
+        let trimmedHTML = html.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedHTML.isEmpty else {
+            return
+        }
+
+        let tab = targetTab(opensInNewTab: opensInNewTab)
+        let resolvedTitle =
+            title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            ? "Eigene HTML-Seite"
+            : title.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        tab.loadHTML(trimmedHTML, title: resolvedTitle)
+        selectTab(tab.id)
+        hideAddPage()
+    }
+
     private func makeTab(isPrivateMode: Bool = false) -> BrowserTab {
         let tab = BrowserTab(isPrivateMode: isPrivateMode)
 
@@ -169,8 +229,20 @@ final class BrowserViewModel: ObservableObject {
         return tab
     }
 
+    private func targetTab(opensInNewTab: Bool) -> BrowserTab {
+        if opensInNewTab || selectedTab == nil {
+            let tab = makeTab(
+                isPrivateMode: selectedTab?.isPrivateMode ?? false
+            )
+            tabs.append(tab)
+            return tab
+        }
+
+        return selectedTab!
+    }
+
     func recordVisit(title: String, url: URL, isPrivate: Bool) {
-        guard !isPrivate else {
+        guard !isPrivate, url.scheme != "about" else {
             return
         }
 
